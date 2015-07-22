@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+    <title>
+        UPlayer by U.E.M.
+    </title>
+</head>
+
+<body>
+    <script type="text/javascript" src="src/player.js"></script>
+    <script type="text/javascript">
+    var p = new UPlayer({
+        fullScreen: true,
+        refresh: true,
+        fps: 3
+    });
+
+    p.plug(function() {
+        console.log('bg');
+    });
+
+    p.plug({
+        hash: 'line',
+        render: function() {
+            console.log('line');
+        }
+    });
+
+    p.plug({
+        hash: 'circle',
+        render: function(ctx, frame) {
+            console.log('circle', frame);
+        }
+    });
+
+    setTimeout(function() {
+
+        p.unplug('line');
+    }, 1000);
+
+    p.run();
+    </script>
+</body>
+
+</html>
