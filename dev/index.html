@@ -6,44 +6,24 @@
     <meta http-equiv="Cache-Control" content="no-cache">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
     <title>
-        UPlayer by U.E.M.
+        UPlayer | U.E.M. Team
     </title>
+    <style type="text/css">
+    body {
+        font-family: 'Microsoft YaHei', 'Myriad Set Pro', 'Lucida Grande', 'Hiragino Sans GB', 'Helvetica', 'Arial', 'sans-serif';
+        line-height: 1.4em;
+    }
+    </style>
 </head>
 
 <body>
     <script type="text/javascript" src="src/player.js"></script>
-    <script type="text/javascript">
-    var p = new UPlayer({
-        fullScreen: true,
-        refresh: true,
-        fps: 3
-    });
-
-    p.plug(function() {
-        console.log('bg');
-    });
-
-    p.plug({
-        hash: 'line',
-        render: function() {
-            console.log('line');
-        }
-    });
-
-    p.plug({
-        hash: 'circle',
-        render: function(ctx, frame) {
-            console.log('circle', frame);
-        }
-    });
-
-    setTimeout(function() {
-
-        p.unplug('line');
-    }, 1000);
-
-    p.run();
-    </script>
+    <script type="text/javascript" src="src/context.js"></script>
+    <script type="text/javascript" src="src/draw-image.js"></script>
+    <script type="text/javascript" src="src/image.js"></script>
+    <script type="text/javascript" src="src/debug.js"></script>
+    <!-- <script type="text/javascript" src="dev/example/1.js"></script> -->
+    <!-- <script type="text/javascript" src="dev/example/2.js"></script> -->
 </body>
 
 </html>

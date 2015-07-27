@@ -21,6 +21,6 @@
     "devel": true,
     "jquery": true,
     "node": true,
-    "predef": ["UPlayer"],
+    "predef": ["UPlayer", "p"],
     "white": false
 }
