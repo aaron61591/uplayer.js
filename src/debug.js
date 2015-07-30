@@ -36,7 +36,7 @@
             s.position = 'fixed';
             s.top = 0;
             s.right = 0;
-            s.zIndex = 1001;
+            s.zIndex = 10000;
             s.fontSize = '24px';
             s.color = '#fff';
             s.margin = '5px';

@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
     'use strict';
 
     grunt.initConfig({
@@ -12,7 +12,16 @@ module.exports = function (grunt) {
         },
         uglify: {
             js: {
-                files: {}
+                files: {
+                    'dist/uplayer.js': [
+                        'src/player.js',
+                        'src/context.js',
+                        'src/draw-image.js',
+                        'src/image.js',
+                        'src/debug.js',
+                        'src/uplayer.js'
+                    ]
+                }
             }
         },
         express: {
@@ -39,6 +48,7 @@ module.exports = function (grunt) {
                 files: [
                     'dev/index.html',
                     'dev/index.css',
+                    'dev/example/*',
                 ],
                 options: {
                     livereload: true
@@ -69,5 +79,5 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
     grunt.registerTask('default', ['jshint', 'uglify', 'express:dev', 'watch']);
-    grunt.registerTask('release', ['copy']);
+    grunt.registerTask('release', ['jshint', 'uglify', 'copy']);
 };

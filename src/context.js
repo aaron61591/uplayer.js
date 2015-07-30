@@ -1,4 +1,4 @@
-(function () {
+(function() {
     'use strict';
 
     /**
@@ -9,7 +9,7 @@
     /**
      * get uplayer ctx
      */
-    window.UPlayer.getContext = function (p) {
+    window.UPlayer.getContext = function(p) {
 
         var ctx = {
             raw: p.canvas.getContext('2d')
@@ -41,7 +41,7 @@
      */
     function _setupMethod(ctx, pro) {
 
-        ctx[pro] = function () {
+        ctx[pro] = function() {
 
             ctx.raw[pro].apply(ctx.raw, arguments);
         };
@@ -52,16 +52,20 @@
      */
     function _setupProp(ctx, pro) {
 
-        Object.defineProperties(ctx, {}[pro] = {
-            get: function () {
+        ctx.props = ctx.props || {};
+
+        ctx.props[pro] = {
+            get: function() {
 
                 return ctx.raw[pro];
             },
-            set: function (val) {
+            set: function(val) {
 
                 ctx.raw[pro] = val;
             }
-        });
+        };
+
+        Object.defineProperties(ctx, ctx.props);
     }
 
     /**

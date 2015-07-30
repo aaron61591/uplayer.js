@@ -1,11 +1,169 @@
 'use strict';
 
-(function() {
+(function () {
 
     var _timer =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.setTimeout;
+
+    /**
+     * class uPlayer
+     */
+    function UPlayer(opt) {
+
+        var p = this;
+
+        _initProp(p, opt);
+
+        if (p.opt.fullScreen === undefined || p.opt.fullScreen) {
+            _fullScreen(p.canvas);
+        }
+    }
+
+    /**
+     * plug in
+     */
+    UPlayer.prototype.plug = function (m) {
+
+        var i = 0;
+        if (m.zIndex !== undefined) {
+            while (i < this.plugins.length) {
+                if (m.zIndex < this.plugins[i].zIndex) {
+                    break;
+                }
+                ++i;
+            }
+            this.plugins.splice(i, 0, m);
+        } else {
+            i = this.plugins.length;
+            this.plugins.push(m);
+        }
+
+        if (m.hash !== undefined) {
+            var index = this.pluginsIndex[m.hash];
+            if (index !== undefined) {
+                if (typeof index === 'object') {
+                    index.push(i);
+                } else {
+                    this.pluginsIndex[m.hash] = [index, i];
+                }
+            } else {
+                _indexUp(this, i);
+                this.pluginsIndex[m.hash] = i;
+            }
+        }
+    };
+
+    /**
+     * plug image animation
+     */
+    UPlayer.prototype.plugCard = function (opt) {
+
+        var p = this;
+
+        window.UPlayer.preImage(opt.src, function (img) {
+
+            opt.img = img;
+
+            opt.render = function (ctx, frame) {
+
+                if (opt.pulse) {
+                    opt.pulse(ctx, frame);
+                }
+
+                var s = opt.scale || 1,
+                    x, len, w;
+
+                if (typeof opt.frame === 'object') {
+                    len = _cardFrame(opt.frame);
+                    x = opt.frame[frame % opt.frame.length];
+                } else {
+                    len = opt.frame;
+                    x = frame % len;
+                }
+
+                w = img.width / len;
+
+                ctx.drawImage(img,
+                    x * w, 0,
+                    w, img.height,
+                    opt.x || 0, opt.y || 0,
+                    w * s, img.height * s);
+            };
+
+            p.plug(opt);
+        });
+    };
+
+    /**
+     * get card frame
+     */
+    function _cardFrame(f) {
+
+        var i = f.length,
+            m = 0;
+
+        while (i--) {
+            if (f[i] > m) {
+                m = f[i];
+            }
+        }
+
+        return m + 1;
+    }
+
+    /**
+     * unplug
+     */
+    UPlayer.prototype.unplug = function (hash) {
+
+        var index = this.pluginsIndex[hash];
+        if (index !== undefined) {
+            if (typeof index !== 'object') {
+                _removePlugin(this, hash, index);
+            } else {
+                var i = index.length;
+                while (i--) {
+                    _removePlugin(this, hash, index[i]);
+                }
+            }
+        }
+    };
+
+    /**
+     * run engine
+     */
+    UPlayer.prototype.run = function (times) {
+
+        var p = this;
+
+        if (times === undefined) {
+            p.playing = true;
+        }
+
+        _next(p, null, times);
+    };
+
+    /**
+     * pause player
+     */
+    UPlayer.prototype.pause = function () {
+
+        this.playing = false;
+    };
+
+    /**
+     * stop player
+     */
+    UPlayer.prototype.stop = function () {
+
+        this.curFrame = 0;
+
+        this.playing = false;
+    };
+
+    window.UPlayer = UPlayer;
 
     /**
      * initialize player
@@ -17,6 +175,8 @@
         p.ctx = window.UPlayer.getContext(p);
 
         p.opt = opt || {};
+
+        p.canvas.id = opt.id || '';
 
         p.plugins = p.opt.debug ? [window.UPlayer.debug] : [];
 
@@ -70,7 +230,7 @@
 
         _fullScreenSize(c);
 
-        window.onresize = function() {
+        window.onresize = function () {
 
             _fullScreenSize(c);
         };
@@ -124,7 +284,7 @@
     /**
      * next time step
      */
-    function _next(p, last) {
+    function _next(p, last, times) {
 
         var cur = +new Date();
 
@@ -132,146 +292,23 @@
             last = cur;
         }
 
-        if (p.playing) {
+        if (p.playing || times > 0) {
             if (cur - last > 1000 / (p.opt.fps || 30)) {
                 _render(p);
 
                 ++p.curFrame;
 
                 last = cur;
+
+                if (times !== undefined) {
+                    --times;
+                }
             }
 
-            _timer.call(window, function() {
+            _timer.call(window, function () {
 
-                _next(p, last);
+                _next(p, last, times);
             });
         }
     }
-
-    /**
-     * class uPlayer
-     */
-    function UPlayer(opt) {
-
-        var p = this;
-
-        _initProp(p, opt);
-
-        if (p.opt.fullScreen === undefined || p.opt.fullScreen) {
-            _fullScreen(p.canvas);
-        }
-    }
-
-    /**
-     * plug in
-     */
-    UPlayer.prototype.plug = function(m) {
-
-        // Performance
-        var i = 0;
-        if (m.zIndex !== undefined) {
-            while (i < this.plugins.length) {
-                if (m.zIndex < this.plugins[i].zIndex) {
-                    break;
-                }
-                ++i;
-            }
-            this.plugins.splice(i, 0, m);
-        } else {
-            i = this.plugins.length;
-            this.plugins.push(m);
-        }
-
-        if (m.hash !== undefined) {
-            var index = this.pluginsIndex[m.hash];
-            if (index !== undefined) {
-                if (typeof index === 'object') {
-                    index.push(i);
-                } else {
-                    this.pluginsIndex[m.hash] = [index, i];
-                }
-            } else {
-                _indexUp(this, i);
-                this.pluginsIndex[m.hash] = i;
-            }
-        }
-    };
-
-    /**
-     * plug image animation
-     */
-    UPlayer.prototype.plugnImage = function(opt) {
-
-        var p = this;
-
-        window.UPlayer.preImage(opt.src, function(img) {
-
-            opt.render = function(ctx, frame) {
-
-                if (opt.action) {
-                    opt.action();
-                }
-
-                var s = opt.scale || 1;
-
-                ctx.drawImage(img,
-                    frame % opt.frame * img.width / opt.frame, 0,
-                    img.width / opt.frame, img.height,
-                    opt.x, opt.y,
-                    img.width / opt.frame * s, img.height * s);
-            };
-
-            p.plug(opt);
-        });
-    };
-
-    /**
-     * unplug
-     */
-    UPlayer.prototype.unplug = function(hash) {
-
-        var index = this.pluginsIndex[hash];
-        if (index !== undefined) {
-            if (typeof index !== 'object') {
-                _removePlugin(this, hash, index);
-            } else {
-                var i = index.length;
-                while (i--) {
-                    _removePlugin(this, hash, index[i]);
-                }
-            }
-        }
-    };
-
-    /**
-     * run engine
-     */
-    UPlayer.prototype.run = function() {
-
-        var p = this;
-
-        p.playing = true;
-
-        _next(p);
-    };
-
-    /**
-     * pause player
-     */
-    UPlayer.prototype.pause = function() {
-
-        this.playing = false;
-    };
-
-    /**
-     * stop player
-     */
-    UPlayer.prototype.stop = function() {
-
-        this.curFrame = 0;
-
-        this.playing = false;
-    };
-
-    window.UPlayer = UPlayer;
 })();

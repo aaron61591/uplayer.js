@@ -15,13 +15,13 @@ while (i < num) {
 
 function addMan() {
 
-    p2.plugnImage({
+    p2.plugCard({
         src: 'dev/images/runningman.png',
         frame: 11,
         x: -20,
         y: 0,
         scale: 0.5,
-        action: function() {
+        pulse: function() {
 
             this.x += 3 * this.scale;
 
