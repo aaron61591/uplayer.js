@@ -140,6 +140,7 @@
             p.playing = true;
         }
 
+        // TODO wait for pre
         _next(p, null, times);
     };
 
@@ -168,7 +169,7 @@
      */
     function _initProp(p, opt) {
 
-        p.canvas = document.createElement('canvas');
+        p.ele = p.canvas = document.createElement('canvas');
 
         p.ctx = window.UPlayer.getContext(p);
 
