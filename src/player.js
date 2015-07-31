@@ -27,18 +27,16 @@
     UPlayer.prototype.plug = function (m) {
 
         var i = 0;
-        if (m.zIndex !== undefined) {
-            while (i < this.plugins.length) {
-                if (m.zIndex < this.plugins[i].zIndex) {
-                    break;
-                }
-                ++i;
+        m.zIndex = m.zIndex || 0;
+
+        while (i < this.plugins.length) {
+            if (m.zIndex < this.plugins[i].zIndex) {
+                break;
             }
-            this.plugins.splice(i, 0, m);
-        } else {
-            i = this.plugins.length;
-            this.plugins.push(m);
+            ++i;
         }
+
+        this.plugins.splice(i, 0, m);
 
         if (m.hash !== undefined) {
             var index = this.pluginsIndex[m.hash];
