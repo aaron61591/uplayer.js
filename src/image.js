@@ -5,6 +5,7 @@
      */
     var data = {},
         count = 0,
+        loading = {},
         wait = [];
 
     /**
@@ -17,27 +18,7 @@
         if (img) {
             cb(img);
         } else {
-            ++count;
-
-            img = new Image();
-
-            img.src = url;
-
-            if (img.complete) {
-                _ready();
-            }
-
-            img.onload = _ready;
-        }
-
-        function _ready() {
-
-            if (!--count) {
-                _awake();
-            }
-
-            data[url] = img;
-            cb(img);
+            _loading(url, cb);
         }
     };
 
@@ -54,6 +35,33 @@
     };
 
     /**
+     * load image
+     */
+    function _loading(url, cb) {
+
+        if (!loading[url]) {
+            ++count;
+
+            var img = new Image();
+
+            img.src = url;
+
+            if (img.complete) {
+                _ready(img, url);
+            }
+
+            img.onload = function () {
+
+                _ready(img, url);
+            };
+
+            loading[url] = [];
+        }
+
+        loading[url].push(cb);
+    }
+
+    /**
      * awake waiting queue
      */
     function _awake() {
@@ -64,5 +72,25 @@
             wait[i]();
             ++i;
         }
+    }
+
+    /**
+     * image resource loaded
+     */
+    function _ready(img, url) {
+
+        if (!--count) {
+            _awake();
+        }
+
+        data[url] = img;
+
+        var i = 0;
+        while (i < loading[url].length) {
+            loading[url][i](img);
+            ++i;
+        }
+
+        loading[url] = null;
     }
 })();

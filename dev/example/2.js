@@ -2,13 +2,12 @@ var p2 = new UPlayer({
         fps: 70,
         debug: true
     }),
-    num = 1,
+    num = 10,
     i = 0;
 
 while (i < num) {
 
     setTimeout(addMan, i * 1000);
-
     ++i;
 }
 

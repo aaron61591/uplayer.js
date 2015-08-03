@@ -117,6 +117,7 @@
     UPlayer.prototype.unplug = function (hash) {
 
         var index = this.pluginsIndex[hash];
+
         if (index !== undefined) {
             if (typeof index !== 'object') {
                 _removePlugin(this, hash, index);
@@ -134,14 +135,16 @@
      */
     UPlayer.prototype.run = function (times) {
 
-        var p = this;
+        if (!this.playing) {
+            this.playing = true;
 
-        if (times === undefined) {
-            p.playing = true;
+            var p = this;
+
+            window.UPlayer._imageReady(function () {
+
+                _next(p, 0, times);
+            });
         }
-
-        // TODO wait for pre
-        _next(p, null, times);
     };
 
     /**
@@ -175,13 +178,15 @@
 
         p.opt = opt || {};
 
-        p.canvas.id = opt.id || '';
+        p.canvas.id = p.opt.id || '';
 
         p.plugins = p.opt.debug ? [window.UPlayer.debug] : [];
 
         p.pluginsIndex = {};
 
         p.curFrame = 0;
+
+        p.playing = false;
     }
 
     /**
@@ -287,12 +292,9 @@
 
         var cur = +new Date();
 
-        if (!last) {
-            last = cur;
-        }
-
-        if (p.playing || times > 0) {
+        if (p.playing) {
             if (cur - last > 1000 / (p.opt.fps || 30)) {
+
                 _render(p);
 
                 ++p.curFrame;
@@ -304,10 +306,14 @@
                 }
             }
 
-            _timer.call(window, function () {
+            if (times === undefined || times) {
+                _timer.call(window, function () {
 
-                _next(p, last, times);
-            });
+                    _next(p, last, times);
+                });
+            } else {
+                p.playing = false;
+            }
         }
     }
 })();
