@@ -18,7 +18,7 @@
         if (img) {
             cb(img);
         } else {
-            _loading(url, cb);
+            load(url, cb);
         }
     };
 
@@ -37,7 +37,7 @@
     /**
      * load image
      */
-    function _loading(url, cb) {
+    function load(url, cb) {
 
         if (!loading[url]) {
             ++count;
@@ -64,7 +64,7 @@
     /**
      * awake waiting queue
      */
-    function _awake() {
+    function awake() {
 
         var i = 0;
 
@@ -80,7 +80,7 @@
     function _ready(img, url) {
 
         if (!--count) {
-            _awake();
+            awake();
         }
 
         data[url] = img;

@@ -78,6 +78,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-express-server');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    grunt.registerTask('default', ['jshint', 'uglify', 'express:dev', 'watch']);
+    grunt.registerTask('default', ['uglify', 'express:dev', 'watch']);
     grunt.registerTask('release', ['jshint', 'uglify', 'copy']);
 };

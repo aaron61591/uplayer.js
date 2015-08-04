@@ -5,29 +5,30 @@
     var _timer =
         window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
-        window.setTimeout;
+        window.setTimeout,
+        UP = window.UPlayer = function (opt) {
 
-    /**
-     * class uPlayer
-     */
-    function UPlayer(opt) {
+            var p = this;
 
-        var p = this;
+            initProp(p, opt);
 
-        _initProp(p, opt);
+            if (p.opt.fullScreen === undefined || p.opt.fullScreen) {
+                fullScreen(p.canvas);
+                // TODO remove old
+                fullScreen(p.$canvas);
 
-        if (p.opt.fullScreen === undefined || p.opt.fullScreen) {
-            _fullScreen(p.canvas);
-        }
-    }
+                document.body.appendChild(p.canvas);
+            }
+        };
 
     /**
      * plug in
      */
-    UPlayer.prototype.plug = function (m) {
+    UP.prototype.plug = function (m) {
 
         var i = 0;
         m.zIndex = m.zIndex || 0;
+        m.$hash = UPlayer._uuid();
 
         while (i < this.plugins.length) {
             if (m.zIndex < this.plugins[i].zIndex) {
@@ -38,17 +39,17 @@
 
         this.plugins.splice(i, 0, m);
 
-        if (m.hash !== undefined) {
-            var index = this.pluginsIndex[m.hash];
+        if (m.id !== undefined) {
+            var index = this.pluginsIndex[m.id];
             if (index !== undefined) {
                 if (typeof index === 'object') {
                     index.push(i);
                 } else {
-                    this.pluginsIndex[m.hash] = [index, i];
+                    this.pluginsIndex[m.id] = [index, i];
                 }
             } else {
-                _indexUp(this, i);
-                this.pluginsIndex[m.hash] = i;
+                indexUp(this, i);
+                this.pluginsIndex[m.id] = i;
             }
         }
     };
@@ -56,11 +57,11 @@
     /**
      * plug image animation
      */
-    UPlayer.prototype.plugCard = function (opt) {
+    UP.prototype.plugCard = function (opt) {
 
         var p = this;
 
-        window.UPlayer.preImage(opt.src, function (img) {
+        UP.preImage(opt.src, function (img) {
 
             opt.img = img;
 
@@ -70,11 +71,12 @@
                     opt.pulse(ctx, frame);
                 }
 
-                var s = opt.scale || 1,
-                    x, len, w;
+                var x, len, w,
+                    sX = opt.scaleX || opt.scale || 1,
+                    sY = opt.scaleY || opt.scale || 1;
 
                 if (typeof opt.frame === 'object') {
-                    len = _cardFrame(opt.frame);
+                    len = cardFrame(opt.frame);
                     x = opt.frame[frame % opt.frame.length];
                 } else {
                     len = opt.frame;
@@ -87,7 +89,7 @@
                     x * w, 0,
                     w, img.height,
                     opt.x || 0, opt.y || 0,
-                    w * s, img.height * s);
+                    w * sX, img.height * sY);
             };
 
             p.plug(opt);
@@ -95,36 +97,19 @@
     };
 
     /**
-     * get card frame
-     */
-    function _cardFrame(f) {
-
-        var i = f.length,
-            m = 0;
-
-        while (i--) {
-            if (f[i] > m) {
-                m = f[i];
-            }
-        }
-
-        return m + 1;
-    }
-
-    /**
      * unplug
      */
-    UPlayer.prototype.unplug = function (hash) {
+    UP.prototype.unplug = function (id) {
 
-        var index = this.pluginsIndex[hash];
+        var index = this.pluginsIndex[id];
 
         if (index !== undefined) {
             if (typeof index !== 'object') {
-                _removePlugin(this, hash, index);
+                removePlugin(this, id, index);
             } else {
                 var i = index.length;
                 while (i--) {
-                    _removePlugin(this, hash, index[i]);
+                    removePlugin(this, id, index[i]);
                 }
             }
         }
@@ -133,7 +118,7 @@
     /**
      * run engine
      */
-    UPlayer.prototype.run = function (times) {
+    UP.prototype.run = function (times) {
 
         if (!this.playing) {
             this.playing = true;
@@ -142,7 +127,7 @@
 
             window.UPlayer._imageReady(function () {
 
-                _next(p, 0, times);
+                next(p, 0, times);
             });
         }
     };
@@ -150,7 +135,7 @@
     /**
      * pause player
      */
-    UPlayer.prototype.pause = function () {
+    UP.prototype.pause = function () {
 
         this.playing = false;
     };
@@ -158,29 +143,31 @@
     /**
      * stop player
      */
-    UPlayer.prototype.stop = function () {
+    UP.prototype.stop = function () {
 
         this.curFrame = 0;
 
         this.playing = false;
     };
 
-    window.UPlayer = UPlayer;
-
     /**
      * initialize player
      */
-    function _initProp(p, opt) {
+    function initProp(p, opt) {
 
-        p.ele = p.canvas = document.createElement('canvas');
+        p.canvas = UP._canvas();
 
-        p.ctx = window.UPlayer.getContext(p);
+        p.$canvas = UP._canvas();
+
+        p.ctx = p.canvas.getContext('2d');
+
+        p.$ctx = p.$canvas.getContext('2d');
 
         p.opt = opt || {};
 
         p.canvas.id = p.opt.id || '';
 
-        p.plugins = p.opt.debug ? [window.UPlayer.debug] : [];
+        p.plugins = p.opt.debug ? [UP.debug] : [];
 
         p.pluginsIndex = {};
 
@@ -190,60 +177,29 @@
     }
 
     /**
-     * render canvas
-     */
-    function _render(p) {
-
-        _clear(p);
-
-        var i = 0;
-        while (i < p.plugins.length) {
-            if (p.plugins[i]) {
-                if (typeof p.plugins[i] === 'function') {
-                    p.plugins[i](p.ctx, p.curFrame);
-                } else if (typeof p.plugins[i].render === 'function') {
-                    p.plugins[i].render(p.ctx, p.curFrame);
-                }
-            }
-            ++i;
-        }
-    }
-
-    /**
-     * clear canvas
-     */
-    function _clear(p) {
-
-        if (p.opt.refresh || p.opt.refresh === undefined) {
-
-            p.ctx.clearRect(0, 0, p.canvas.width, p.canvas.height);
-        }
-    }
-
-    /**
      * handle full screen
      */
-    function _fullScreen(c) {
+    function fullScreen(c) {
 
-        c.style.position = 'fixed';
-        c.style.top = 0;
-        c.style.left = 0;
-        c.style.zIndex = 1000;
+        var s = c.style;
 
-        document.body.appendChild(c);
+        s.position = 'fixed';
+        s.top = 0;
+        s.left = 0;
+        s.zIndex = 1000;
 
-        _fullScreenSize(c);
+        fullSize(c);
 
         window.onresize = function () {
 
-            _fullScreenSize(c);
+            fullSize(c);
         };
     }
 
     /**
      * canvas full screen size
      */
-    function _fullScreenSize(c) {
+    function fullSize(c) {
 
         c.width = window.innerWidth;
         c.height = window.innerHeight;
@@ -252,11 +208,11 @@
     /**
      * update index when plug a new animate
      */
-    function _indexUp(p, i) {
+    function indexUp(p, i) {
 
-        for (var hash in p.pluginsIndex) {
-            if (p.pluginsIndex.hasOwnProperty(hash) && p.pluginsIndex[hash] >= i) {
-                ++p.pluginsIndex[hash];
+        for (var id in p.pluginsIndex) {
+            if (p.pluginsIndex.hasOwnProperty(id) && p.pluginsIndex[id] >= i) {
+                ++p.pluginsIndex[id];
             }
         }
     }
@@ -264,11 +220,11 @@
     /**
      * update index when unplug a new animate
      */
-    function _indexDown(p, i) {
+    function indexDown(p, i) {
 
-        for (var hash in p.pluginsIndex) {
-            if (p.pluginsIndex.hasOwnProperty(hash) && p.pluginsIndex[hash] >= i) {
-                ++p.pluginsIndex[hash];
+        for (var id in p.pluginsIndex) {
+            if (p.pluginsIndex.hasOwnProperty(id) && p.pluginsIndex[id] >= i) {
+                ++p.pluginsIndex[id];
             }
         }
     }
@@ -276,26 +232,26 @@
     /**
      * remove plugn
      */
-    function _removePlugin(p, hash, i) {
+    function removePlugin(p, id, i) {
 
         p.plugins.splice(i, 1);
 
-        p.pluginsIndex[hash] = undefined;
+        p.pluginsIndex[id] = undefined;
 
-        _indexDown(p, i);
+        indexDown(p, i);
     }
 
     /**
      * next time step
      */
-    function _next(p, last, times) {
+    function next(p, last, times) {
 
         var cur = +new Date();
 
         if (p.playing) {
             if (cur - last > 1000 / (p.opt.fps || 30)) {
 
-                _render(p);
+                UPlayer._render(p);
 
                 ++p.curFrame;
 
@@ -309,11 +265,28 @@
             if (times === undefined || times) {
                 _timer.call(window, function () {
 
-                    _next(p, last, times);
+                    next(p, last, times);
                 });
             } else {
                 p.playing = false;
             }
         }
+    }
+
+    /**
+     * get card frame
+     */
+    function cardFrame(f) {
+
+        var i = f.length,
+            m = 0;
+
+        while (i--) {
+            if (f[i] > m) {
+                m = f[i];
+            }
+        }
+
+        return m + 1;
     }
 })();

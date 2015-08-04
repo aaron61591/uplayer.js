@@ -12,7 +12,7 @@
      */
     window.UPlayer.debug = function() {
 
-        _create();
+        create();
 
         if (++i % calNum === 0) {
             t1 = +new Date();
@@ -25,7 +25,7 @@
     /**
      * create fps display dom
      */
-    function _create() {
+    function create() {
 
         if (!created) {
             var div = document.createElement('div'),
