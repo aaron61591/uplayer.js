@@ -65,6 +65,8 @@
 
             opt.img = img;
 
+            opt.card = true;
+
             opt.render = function (ctx, frame) {
 
                 if (opt.pulse) {

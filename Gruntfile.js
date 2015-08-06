@@ -15,11 +15,10 @@ module.exports = function(grunt) {
                 files: {
                     'dist/uplayer.js': [
                         'src/player.js',
-                        'src/context.js',
-                        'src/draw-image.js',
+                        'src/render.js',
                         'src/image.js',
                         'src/debug.js',
-                        'src/uplayer.js'
+                        'src/utils.js'
                     ]
                 }
             }

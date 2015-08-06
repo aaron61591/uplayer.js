@@ -41,7 +41,7 @@
      */
     function renderPlugin(p, plugin) {
 
-        if (plugin.frame) {
+        if (plugin.frame && !plugin.card) {
             renderPerformance(p, plugin);
         } else {
             renderOriginal(p, plugin);

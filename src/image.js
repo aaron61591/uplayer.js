@@ -42,23 +42,23 @@
         if (!loading[url]) {
             ++count;
 
+            loading[url] = [cb];
+
             var img = new Image();
 
             img.src = url;
 
             if (img.complete) {
                 _ready(img, url);
+            } else {
+                img.onload = function () {
+
+                    _ready(img, url);
+                };
             }
-
-            img.onload = function () {
-
-                _ready(img, url);
-            };
-
-            loading[url] = [];
+        } else {
+            loading[url].push(cb);
         }
-
-        loading[url].push(cb);
     }
 
     /**
