@@ -1,93 +1,94 @@
-var p3 = new UPlayer({
-        debug: true
-    }),
-    num = 1000,
-    EXCUR = [0, 2, 4, 6, 4, 2, 0];
+var screenNum = 10,
+    num = 200,
+    color = [
+        '#ecd2b0',
+        '#8b3d3f',
+        '#746852'
+    ],
+    i = 0;
 
-p3.plug({
-    frame: 7,
-    render: function (ctx, frame) {
+window.plugball = function (p) {
 
-        var excur = EXCUR[frame % 7],
-            i = 0;
+    while (i < screenNum) {
 
-        ctx.fillStyle = ctx.strokeStyle = '#c4f2ff';
+        p.plug({
+            render: function (ctx) {
 
-        while (i < num) {
-            _cloud1(ctx, excur);
-            _cloud2(ctx, excur);
-            _cloud3(ctx, excur);
-            ++i;
-        }
+                ctx.fillStyle = '#353f41';
+                ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+            }
+        });
 
+        p.plug({
+            frame: 20,
+            render: function (ctx, frame) {
+
+                balls(ctx);
+            }
+        });
+
+        ++i;
     }
-});
+};
 
-p3.run();
+function balls(ctx) {
 
-/**
- * render cloud1
- */
-function _cloud1(ctx, excur) {
+    var i = 0,
+        t, x, y;
 
-    var cx = window.innerWidth * 0.05,
-        cy = window.innerHeight * 0.3 + excur;
-
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.quadraticCurveTo(cx + 50, cy - 10, cx + 111, cy - 14);
-    ctx.bezierCurveTo(cx + 125, cy - 20, cx + 120, cy - 40, cx + 98, cy - 38);
-    ctx.bezierCurveTo(cx + 90, cy - 52, cx + 65, cy - 50, cx + 65, cy - 27);
-    ctx.quadraticCurveTo(cx + 58, cy - 30, cx + 56, cy - 24);
-    ctx.quadraticCurveTo(cx + 40, cy - 30, cx + 37, cy - 14);
-    ctx.quadraticCurveTo(cx + 33, cy - 14, cx + 31, cy - 8);
-    ctx.quadraticCurveTo(cx + 11, cy - 4, cx, cy - 2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    while (i < num) {
+        if (!t) {
+            t = ball(ctx, x, y);
+            x = t.x;
+            y = t.y;
+        } else {
+            ball(ctx, x, y);
+        }
+        ++i;
+    }
 }
 
+function ball(ctx, x, y) {
 
-/**
- * render cloud2
- */
-function _cloud2(ctx, excur) {
+    var size = Math.round(Math.random() * 50 + 10),
+        circle = Math.round(Math.random() * (size / 10)),
+        i = 0,
+        r = Math.random(),
+        t;
 
-    var cx = window.innerWidth * 0.49,
-        cy = window.innerHeight * 0.25 + excur;
+    if (!x) {
+        x = Math.round(Math.random() * window.innerWidth);
+        y = Math.round(Math.random() * window.innerHeight);
+    } else {
+        if (r > 0.99) {
+            t = 1.3;
+        } else if (r > 0.95) {
+            t = 1.5;
+        } else if (r > 0.9) {
+            t = 2;
+        } else if (r > 0.8) {
+            t = 3;
+        } else {
+            t = 5;
+        }
+        x += Math.round(Math.random() * window.innerWidth / t) * (Math.random() > 0.5 ? -1 : 1);
+        y += Math.round(Math.random() * window.innerHeight / t) * (Math.random() > 0.5 ? -1 : 1);
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.quadraticCurveTo(cx + 24, cy + 1, cx + 63, cy);
-    ctx.arc(cx + 63, cy - 13, 13, Math.PI * 0.45, Math.PI * 1, true);
-    ctx.quadraticCurveTo(cx + 40, cy - 12, cx + 40, cy - 6);
-    ctx.quadraticCurveTo(cx + 36, cy, cx + 36, cy - 2);
-    ctx.quadraticCurveTo(cx, cy, cx, cy - 3);
-    ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
-}
+    while (i < circle) {
 
+        ctx.fillStyle = ctx.strokeStyle = color[i % color.length];
 
-/**
- * render cloud3
- */
-function _cloud3(ctx, excur) {
+        ctx.beginPath();
+        ctx.arc(x, y, size - i * 10, 0, 2 * Math.PI);
+        ctx.closePath();
+        ctx.fill();
 
-    var cx = window.innerWidth * 0.625,
-        cy = window.innerHeight * 0.28 + excur;
+        ++i;
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.quadraticCurveTo(cx + 48, cy - 2, cx + 104, cy + 11);
-    ctx.lineTo(cx + 104, cy + 9);
-    ctx.quadraticCurveTo(cx + 85, cy + 9, cx + 89, cy - 18);
-    ctx.bezierCurveTo(cx + 88, cy - 41, cx + 56, cy - 41, cx + 53, cy - 22);
-    ctx.quadraticCurveTo(cx + 38, cy - 26, cx + 39, cy - 11);
-    ctx.quadraticCurveTo(cx + 32, cy - 11, cx + 32, cy - 5);
-    ctx.quadraticCurveTo(cx + 32, cy - 2, cx + 29, cy - 2);
-    ctx.quadraticCurveTo(cx + 15, cy - 1, cx, cy - 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
+    return {
+        x: x,
+        y: y
+    };
 }

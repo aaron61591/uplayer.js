@@ -1,6 +1,11 @@
 (function () {
 
     var UP = window.UPlayer,
+        TOTAL_PIXEL = 45705600,
+        MAX_PIXEL = 152352,
+        curPixel = 0,
+        full = false,
+        noNeed = [],
         data = {};
 
     /**
@@ -25,7 +30,7 @@
      */
     UP._clearCache = function () {
 
-
+        // TODO
     };
 
     /**
@@ -41,11 +46,19 @@
      */
     function renderPlugin(p, plugin) {
 
-        if (plugin.frame && !plugin.card) {
+        if (isAble(p, plugin)) {
             renderPerformance(p, plugin);
         } else {
             renderOriginal(p, plugin);
         }
+    }
+
+    /**
+     * whether this frame is able to optimise
+     */
+    function isAble(p, plugin) {
+
+        return plugin.frame && !plugin.card && p.opt.performance !== false && noNeed.indexOf(getHash(p, plugin)) === -1;
     }
 
     /**
@@ -65,17 +78,89 @@
      */
     function renderPerformance(p, plugin) {
 
-        var img = data[getHash(p, plugin)];
+        var c = data[getHash(p, plugin)],
+            d = [],
+            i = 3,
+            x = 0,
+            y = 0,
+            w = p.$canvas.width,
+            h = p.$canvas.height,
+            minX,
+            minY,
+            maxX,
+            maxY;
 
-        if (!img) {
+        if (!c) {
+            if (full) {
+                renderOriginal(p, plugin);
+                return;
+            }
             clear(p.$ctx, p);
             plugin.render(p.$ctx, p.curFrame);
-            img = new Image();
-            img.src = p.$ctx.canvas.toDataURL();
-            data[getHash(p, plugin)] = img;
+
+            d = p.$ctx.getImageData(0, 0, w, h).data;
+
+            while (i < d.length) {
+                if (d[i]) {
+                    x = (i - 3) / 4 % w;
+                    y = parseInt(i / 4 / w, 10);
+                    if (minX === undefined) {
+                        minX = maxX = x;
+                        minY = maxY = y;
+                    } else {
+                        if (x < minX) {
+                            minX = x;
+                        }
+                        if (y < minY) {
+                            minY = y;
+                        }
+                        if (x > maxX) {
+                            maxX = x;
+                        }
+                        if (y > maxY) {
+                            maxY = y;
+                        }
+                    }
+                }
+                i += 4;
+            }
+
+            var img = new Image(),
+                fw = maxX - minX + 1,
+                fh = maxY - minY + 1,
+                canvas = document.createElement('canvas'),
+                ctx = canvas.getContext('2d');
+
+            if (fw * fh < TOTAL_PIXEL - curPixel) {
+                if (fw * fh < MAX_PIXEL) {
+
+                    curPixel += fw * fh;
+                    canvas.width = fw;
+                    canvas.height = fh;
+
+                    ctx.drawImage(p.$canvas, minX, minY, fw, fh, 0, 0, fw, fh);
+
+                    img.src = canvas.toDataURL();
+
+                    data[getHash(p, plugin)] = c = {
+                        x: minX,
+                        y: minY,
+                        img: img
+                    };
+                } else {
+                    renderOriginal(p, plugin);
+                    noNeed.push(getHash(p, plugin));
+                    return;
+                }
+            } else {
+                full = true;
+                renderOriginal(p, plugin);
+                alert('full');
+                return;
+            }
         }
 
-        p.ctx.drawImage(img, 0, 0, getWidth(p), getHeight(p));
+        p.ctx.drawImage(c.img, c.x, c.y);
     }
 
     /**

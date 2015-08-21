@@ -9,14 +9,98 @@
         UPlayer | U.E.M. Team
     </title>
     <style type="text/css">
+    html,
+    body,
+    div,
+    span,
+    object,
+    iframe,
+    ul,
+    ol,
+    li h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    audio,
+    video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        font-size: 100%;
+        list-style: none;
+    }
+    
+    a:visited {
+        color: #333;
+        text-decoration: none;
+    }
+    
+    a:link {
+        color: #333;
+        text-decoration: none;
+    }
+    
     body {
         font-family: 'Microsoft YaHei', 'Myriad Set Pro', 'Lucida Grande', 'Hiragino Sans GB', 'Helvetica', 'Arial', 'sans-serif';
         line-height: 1.4em;
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        background: #304a96;
+        color: #fff;
+        text-align: center;
+    }
+    
+    h1 {
+        text-align: center;
+        font-size: 36px;
+    }
+    
+    h2 {
+        font-size: 24px;
+        margin: 25px;
+    }
+    
+    button {
+        height: 45px;
+        width: 140px;
+        font-size: 18px;
+        display: inline-block;
+        background: rgb(255, 255, 255);
+        border: 0;
+        border-radius: 5px;
+        font-weight: 700;
+        -webkit-transition: all 0.5s ease;
+        color: #666;
+        margin: 10px;
+    }
+    
+    li {
+        margin: 10px;
     }
     </style>
 </head>
 
 <body>
+    <h1>UPlayer | U.E.M. Team</h1>
+    <h2>一、FPS测试</h2>
+    <p>
+        <button id="run1">原生Canvas</button>
+        <button id="run2">UPlayer优化</button>
+    </p>
+    <h2>二、性能对比</h2>
+    <p>绘制相同数量的复杂圆形动画，UPlayer的FPS更高</p>
+    <img width="320" src="dev/images/performance.png">
+    <h2>三、开发效率对比</h2>
+    <p>实现相同功能，UPlayer需要的代码量更少</p>
+    <img width="320" src="dev/images/code.png">
+    <h2>四、成果展示</h2>
+    <p>
+        <button id="game">跑步游戏</button>
+    </p>
     <script type="text/javascript" src="src/player.js"></script>
     <script type="text/javascript" src="src/render.js"></script>
     <script type="text/javascript" src="src/image.js"></script>
@@ -25,6 +109,36 @@
     <!-- // <script type="text/javascript" src="dev/example/1.js"></script> -->
     <!-- // <script type="text/javascript" src="dev/example/2.js"></script> -->
     <script type="text/javascript" src="dev/example/3.js"></script>
+    <script type="text/javascript" src="dev/query.js"></script>
+    <script type="text/javascript">
+    $('#run1').on('click', function() {
+
+        run(false);
+    });
+
+    $('#run2').on('click', function() {
+
+        run(true);
+    });
+
+    function run(performance) {
+
+        var p = new UPlayer({
+            fps: 70,
+            debug: true,
+            performance: performance
+        });
+
+        window.plugball(p);
+
+        p.run();
+    }
+
+    $('#game').on('click', function() {
+
+        window.location.href = 'http://rec.uc.cn/actplat/frontend/page/show/234/running.html?uc_param_str=nidnpfvelaeisifrcpbisspr';
+    });
+    </script>
 </body>
 
 </html>
