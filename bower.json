@@ -1,0 +1,18 @@
+{
+  "name": "uplayer.js",
+  "description": "Performance & Pluggable Animation Player by U.E.M. Team",
+  "version": "0.1.0",
+  "homepage": "https://github.com/aaron61591/uplayer.js",
+  "authors": [
+    "Aaron <aaron61591@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "main": "release/uplayer-0.1.0.js"
+}
